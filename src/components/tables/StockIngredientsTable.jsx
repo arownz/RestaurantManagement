@@ -74,10 +74,10 @@ function StockIngredientsTable() {
                 <td>{item.Container}</td>
                 <td>{item.Quantity}</td>
                 <td>{item.Container_Size}</td>
-                <td>${item.Container_Price.toFixed(2)}</td>
+                <td>${typeof item.Container_Price === 'number' ? item.Container_Price.toFixed(2) : parseFloat(item.Container_Price).toFixed(2)}</td>
                 <td>{item.Total_Quantity}</td>
-                <td>${item.Total_Price.toFixed(2)}</td>
-                <td>${item.Unit_Price.toFixed(4)}</td>
+                <td>${typeof item.Total_Price === 'number' ? item.Total_Price.toFixed(2) : parseFloat(item.Total_Price).toFixed(2)}</td>
+                <td>${typeof item.Unit_Price === 'number' ? item.Unit_Price.toFixed(4) : parseFloat(item.Unit_Price).toFixed(4)}</td>
                 <td>
                   <Button 
                     variant="danger" 

@@ -27,11 +27,17 @@ function RecipesTable() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this recipe?')) {
       try {
-        await axios.delete(`http://localhost:3006/api/Recipes/${id}`);
+        console.log('Deleting recipe:', id);
+        const response = await axios.delete(`http://localhost:3006/api/Recipes/${id}`);
+        console.log('Delete response:', response);
         setRecipes(recipes.filter(recipe => recipe.RecipeID !== id));
       } catch (err) {
         console.error('Error deleting recipe:', err);
-        setError('Failed to delete recipe.');
+        if (err.response && err.response.data) {
+          setError(`Failed to delete recipe: ${err.response.data.error || err.message}`);
+        } else {
+          setError('Failed to delete recipe. Server error occurred.');
+        }
       }
     }
   };

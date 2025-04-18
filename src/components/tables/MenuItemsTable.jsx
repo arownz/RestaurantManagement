@@ -33,7 +33,25 @@ function MenuItemsTable() {
         setMenuItems(menuItems.filter(item => item.MenuID !== id));
       } catch (err) {
         console.error('Error deleting menu item:', err);
-        setError('Failed to delete menu item. It may be referenced by other tables.');
+        
+        // Check if it's a foreign key constraint error
+        if (err.response && err.response.data && err.response.data.code === 'FOREIGN_KEY_CONSTRAINT') {
+          const shouldCascade = window.confirm(
+            `${err.response.data.error}\n\nWould you like to delete this menu item and ALL related recipes and orders? This action cannot be undone.`
+          );
+          
+          if (shouldCascade) {
+            try {
+              await axios.delete(`http://localhost:3006/api/MenuItems/${id}/cascade`);
+              setMenuItems(menuItems.filter(item => item.MenuID !== id));
+            } catch (cascadeErr) {
+              console.error('Error cascading delete:', cascadeErr);
+              setError('Failed to delete menu item and related records. Please try again.');
+            }
+          }
+        } else {
+          setError('Failed to delete menu item. It may be referenced by other tables.');
+        }
       }
     }
   };
@@ -45,10 +63,13 @@ function MenuItemsTable() {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://localhost:3006/api/MenuItems/${editMenuItem.MenuID}`, {
+      console.log('Updating menu item:', editMenuItem);
+      const payload = {
         Menu: editMenuItem.Menu,
         SellingPrice: parseFloat(editMenuItem.SellingPrice)
-      });
+      };
+      const response = await axios.put(`http://localhost:3006/api/MenuItems/${editMenuItem.MenuID}`, payload);
+      console.log('Update response:', response);
       
       setMenuItems(menuItems.map(item => 
         item.MenuID === editMenuItem.MenuID ? 
@@ -58,7 +79,11 @@ function MenuItemsTable() {
       setShowModal(false);
     } catch (err) {
       console.error('Error updating menu item:', err);
-      setError('Failed to update menu item.');
+      if (err.response && err.response.data) {
+        setError(`Failed to update menu item: ${err.response.data.error || err.message}`);
+      } else {
+        setError('Failed to update menu item. Server error occurred.');
+      }
     }
   };
 

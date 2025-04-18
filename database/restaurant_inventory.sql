@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS Ingredients (
     IngredientName VARCHAR(100) NOT NULL UNIQUE,
     UnitOfMeasurement VARCHAR(20),
     CategoryID INT,
-    FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
+    FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID) ON DELETE SET NULL
 );
 
 -- Create StockIngredients table
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS StockIngredients (
     Total_Price DECIMAL(10,2),
     Unit_Price DECIMAL(10,4),
     PRIMARY KEY (StockIngredientsID, IngredientsID),
-    FOREIGN KEY (IngredientsID) REFERENCES Ingredients(IngredientsID)
+    FOREIGN KEY (IngredientsID) REFERENCES Ingredients(IngredientsID) ON DELETE CASCADE
 );
 
 -- Create MenuItems table
@@ -45,8 +45,8 @@ CREATE TABLE IF NOT EXISTS Recipes (
     MenuID INT,
     IngredientsID INT,
     Quantity DECIMAL(10,2),
-    FOREIGN KEY (MenuID) REFERENCES MenuItems(MenuID),
-    FOREIGN KEY (IngredientsID) REFERENCES Ingredients(IngredientsID)
+    FOREIGN KEY (MenuID) REFERENCES MenuItems(MenuID) ON DELETE CASCADE,
+    FOREIGN KEY (IngredientsID) REFERENCES Ingredients(IngredientsID) ON DELETE CASCADE
 );
 
 -- Create Orders table
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS Orders (
     Quantity INT,
     TotalPrice DECIMAL(10,2),
     OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (MenuID) REFERENCES MenuItems(MenuID)
+    FOREIGN KEY (MenuID) REFERENCES MenuItems(MenuID) ON DELETE CASCADE
 );
 
 -- Create required views

@@ -38,11 +38,17 @@ function OrdersTable() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this order?')) {
       try {
-        await axios.delete(`http://localhost:3006/api/Orders/${id}`);
+        console.log('Deleting order:', id);
+        const response = await axios.delete(`http://localhost:3006/api/Orders/${id}`);
+        console.log('Delete response:', response);
         setOrders(orders.filter(order => order.OrderID !== id));
       } catch (err) {
         console.error('Error deleting order:', err);
-        setError('Failed to delete order.');
+        if (err.response && err.response.data) {
+          setError(`Failed to delete order: ${err.response.data.error || err.message}`);
+        } else {
+          setError('Failed to delete order. Server error occurred.');
+        }
       }
     }
   };

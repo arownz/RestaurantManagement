@@ -34,7 +34,25 @@ function CategoryTable() {
         setCategories(categories.filter(category => category.CategoryID !== id));
       } catch (err) {
         console.error('Error deleting category:', err);
-        setError('Failed to delete category. It may be referenced by other tables.');
+        
+        // Check if it's a foreign key constraint error
+        if (err.response && err.response.data && err.response.data.code === 'FOREIGN_KEY_CONSTRAINT') {
+          const shouldCascade = window.confirm(
+            `${err.response.data.error}\n\nWould you like to delete this category and ALL related ingredients, recipes, and stock items? This action cannot be undone.`
+          );
+          
+          if (shouldCascade) {
+            try {
+              await axios.delete(`http://localhost:3006/api/Category/${id}/cascade`);
+              setCategories(categories.filter(category => category.CategoryID !== id));
+            } catch (cascadeErr) {
+              console.error('Error cascading delete:', cascadeErr);
+              setError('Failed to delete category and related records. Please try again.');
+            }
+          }
+        } else {
+          setError('Failed to delete category. It may be referenced by other tables.');
+        }
       }
     }
   };

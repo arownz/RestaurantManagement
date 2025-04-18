@@ -44,7 +44,25 @@ function IngredientsTable() {
         setIngredients(ingredients.filter(ingredient => ingredient.IngredientsID !== id));
       } catch (err) {
         console.error('Error deleting ingredient:', err);
-        setError('Failed to delete ingredient. It may be referenced by other tables.');
+        
+        // Check if it's a foreign key constraint error
+        if (err.response && err.response.data && err.response.data.code === 'FOREIGN_KEY_CONSTRAINT') {
+          const shouldCascade = window.confirm(
+            `${err.response.data.error}\n\nWould you like to delete this ingredient and ALL related recipes and stock items? This action cannot be undone.`
+          );
+          
+          if (shouldCascade) {
+            try {
+              await axios.delete(`http://localhost:3006/api/Ingredients/${id}/cascade`);
+              setIngredients(ingredients.filter(ingredient => ingredient.IngredientsID !== id));
+            } catch (cascadeErr) {
+              console.error('Error cascading delete:', cascadeErr);
+              setError('Failed to delete ingredient and related records. Please try again.');
+            }
+          }
+        } else {
+          setError('Failed to delete ingredient. It may be referenced by other tables.');
+        }
       }
     }
   };
